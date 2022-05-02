@@ -1,0 +1,47 @@
+# encoding: Windows-1252
+class VagrantPlugins::ProviderVirtualBox::Action::Network
+  def dhcp_server_matches_config?(dhcp_server, config)
+    true
+  end
+end
+#Beginn der Konfiguration
+  Vagrant.configure("2") do |config|
+#Auswahl der VM, bzw. Betriebssystem (VM aus Vagrant Cloud)
+    config.vm.box = "ubuntu/xenial64"
+#Hostname der VM festlegen    
+    config.vm.hostname = "ubuntu64"
+#IP der VM festlegen / Privates Netzwerk zur Sicherheit 
+    config.vm.network "private_network", type: "dhcp"
+#Virtualbox Einstellungen vornehmen
+    config.vm.provider "virtualbox" do |vb|
+#Virtualbox Name festlegen
+    vb.name = "subsonic_server-ubuntu64"
+#RAM Einstellungen festlegen    
+    vb.memory = "2048"
+  end
+
+#Terminal Befehle konfigurieren
+    config.vm.provision "shell", inline: <<-SHELL
+#Updates durchlaufen lassen
+    sudo apt-get update
+#Upgrades durchlaufen lassen    
+    sudo apt-get upgrade
+#Java installieren    
+    sudo apt-get install openjdk-8-jre -y
+
+#Subsonic.deb package installieren
+    wget https://s3-eu-west-1.amazonaws.com/subsonic-public/download/subsonic-6.1.6.deb
+#Subsonic.deb package entpacken
+    sudo dpkg -i subsonic-6.1.6.deb
+#Subsonic Status überprüfen und starten
+    systemctl status subsonic
+    sudo systemctl start subsonic
+#Subsonic Autostart aktivieren
+    sudo systemctl enable subsonic
+#Firewall aktivieren
+    sudo ufw enable
+#Firewall Port 20 und 21 öffnen
+    sudo ufw allow 20/tcp
+    sudo ufw allow 21/tcp  
+  SHELL
+  end
