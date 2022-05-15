@@ -1,0 +1,36 @@
+# Version
+version: '1.0'
+
+# Start der Services
+services:
+# Container festlegen
+   db:
+# Image fuer Container festlegen
+      image: mysql:8.0
+# Containernamen setzen
+      container_name: mysql
+# Container startet immer neu, wenn dieser gestoppt wird
+      restart: always
+# Root-Passwort fuer die Datenbank setzen
+      environment:
+        MYSQL_ROOT_PASSWORD: mysql-password
+
+# Zweiten Container setzen    
+   app:
+# Abhaengigkeit zum ersten Container definieren
+      depends_on:
+       - db
+# Image fuer den ersten Container festlegen
+      image: phpmyadmin/phpmyadmin
+# Containernamen setzen
+      container_name: phpmyadmin
+# Container startet immer neu, wenn dieser gestoppt wird
+      restart: always
+# Port 80 wird auf den Port 8080 umgeleitet
+      ports:
+       - '8080:80'
+# Legt den mySQL Host fest
+      environment:
+        PMA_HOST: db
+# Erstellt ein Image mit dem dazugehoerigen Dockerfile
+      build: .
